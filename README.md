@@ -1,70 +1,224 @@
-# Getting Started with Create React App
+# NASA Weather Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A comprehensive weather analysis application that uses NASA Earth observation data to help users plan outdoor activities by analyzing the likelihood of adverse weather conditions.
 
-## Available Scripts
+## 🌟 Features
 
-In the project directory, you can run:
+### Frontend (React)
 
-### `npm start`
+- **Interactive Location Selection**: Search by name, enter coordinates, or use map interface
+- **Customizable Weather Analysis**: Select specific weather conditions and set thresholds
+- **Real-time Data Visualization**: Charts and graphs showing weather probabilities
+- **Data Export**: Download analysis results in CSV or JSON formats
+- **Responsive Design**: Modern, mobile-friendly interface
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Backend (FastAPI)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **RESTful API**: Comprehensive weather analysis endpoints
+- **NASA Integration**: Integration with NASA Earth observation data APIs
+- **Data Processing**: Statistical analysis and probability calculations
+- **File Downloads**: Server-side generation of CSV and JSON exports
+- **CORS Support**: Configured for seamless frontend integration
+- **Auto Documentation**: Swagger UI and ReDoc documentation
 
-### `npm test`
+## 🚀 Quick Start
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
 
-### `npm run build`
+- Node.js 16+ and npm
+- Python 3.8+
+- Git
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. **Clone the repository**:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+   ```bash
+   git clone <repository-url>
+   cd weather-check
+   ```
 
-### `npm run eject`
+2. **Start the Backend**:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   cp env.example .env
+   # Edit .env with your NASA API key (optional)
+   python main.py
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+   The backend will be available at `http://localhost:8000`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+   - API Documentation: `http://localhost:8000/docs`
+   - ReDoc: `http://localhost:8000/redoc`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+3. **Start the Frontend** (in a new terminal):
 
-## Learn More
+   ```bash
+   npm install
+   npm start
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+   The frontend will be available at `http://localhost:3000`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📁 Project Structure
 
-### Code Splitting
+```
+weather-check/
+├── backend/                 # FastAPI backend
+│   ├── app/
+│   │   ├── api/            # API routes
+│   │   ├── core/           # Configuration
+│   │   ├── models/          # Pydantic models
+│   │   └── services/        # Business logic
+│   ├── main.py             # FastAPI app entry point
+│   ├── requirements.txt    # Python dependencies
+│   └── README.md           # Backend documentation
+├── src/                    # React frontend
+│   ├── components/         # React components
+│   ├── services/           # API services
+│   └── ...
+├── public/                 # Static assets
+└── README.md               # This file
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 🔧 Configuration
 
-### Analyzing the Bundle Size
+### Backend Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Create a `.env` file in the `backend/` directory:
 
-### Making a Progressive Web App
+```env
+# NASA API Configuration
+NASA_API_KEY=your_nasa_api_key_here
+NASA_BASE_URL=https://power.larc.nasa.gov/api/v1
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+# API Configuration
+DEBUG=True
+API_TITLE="NASA Weather Dashboard API"
 
-### Advanced Configuration
+# CORS Configuration
+CORS_ORIGINS=["http://localhost:3000", "http://127.0.0.1:3000"]
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Frontend Configuration
 
-### Deployment
+Create a `.env` file in the root directory:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```env
+REACT_APP_API_URL=http://localhost:8000
+```
 
-### `npm run build` fails to minify
+## 📊 API Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Weather Analysis
+
+- `POST /api/v1/analyze` - Analyze weather conditions
+- `GET /api/v1/parameters` - Get available weather parameters
+- `POST /api/v1/download/csv` - Download CSV data
+- `POST /api/v1/download/json` - Download JSON data
+- `GET /api/v1/health` - Health check
+
+### Example API Usage
+
+```python
+import requests
+
+# Analyze weather conditions
+query = {
+    "location": {
+        "name": "New York City",
+        "lat": 40.7128,
+        "lon": -74.0060,
+        "method": "search"
+    },
+    "conditions": ["very-hot", "very-windy"],
+    "time_range": {
+        "start_date": "2024-01-01",
+        "end_date": "2024-12-31"
+    },
+    "thresholds": {
+        "temperature_hot": 90,
+        "wind_speed": 25
+    }
+}
+
+response = requests.post("http://localhost:8000/api/v1/analyze", json=query)
+result = response.json()
+```
+
+## 🎯 Usage Guide
+
+1. **Select Location**: Choose your location using search, coordinates, or map
+2. **Configure Analysis**: Select weather conditions and set thresholds
+3. **View Results**: Get probability analysis with visualizations
+4. **Download Data**: Export results in CSV or JSON format
+
+## 🌦️ Weather Conditions Analyzed
+
+- **Very Hot**: Extreme heat conditions above specified temperature
+- **Very Cold**: Extreme cold conditions below specified temperature
+- **Very Windy**: High wind speed conditions above threshold
+- **Very Wet**: Heavy precipitation conditions above threshold
+- **Poor Air Quality**: Unhealthy air quality conditions above AQI threshold
+
+## 🔬 Data Sources
+
+This application integrates with NASA Earth observation data, including:
+
+- Temperature data from various NASA missions
+- Precipitation measurements
+- Wind speed and direction data
+- Air quality and aerosol data
+
+## 🛠️ Development
+
+### Backend Development
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+### Frontend Development
+
+```bash
+npm install
+npm start
+```
+
+### Testing
+
+- Backend: Use Swagger UI at `http://localhost:8000/docs`
+- Frontend: Automated tests with Jest and React Testing Library
+
+## 📝 License
+
+This project is part of the NASA Weather Dashboard application.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📞 Support
+
+For issues and questions:
+
+- Check the API documentation at `/docs`
+- Review the backend README in `backend/README.md`
+- Open an issue in the repository
+
+## 🔮 Future Enhancements
+
+- Real-time weather data integration
+- Historical weather trend analysis
+- Machine learning predictions
+- Mobile app development
+- Advanced mapping features
+- Weather alerts and notifications
