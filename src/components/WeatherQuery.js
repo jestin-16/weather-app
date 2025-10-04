@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Thermometer, Wind, Droplets, Eye } from 'lucide-react';
 
-const WeatherQuery = ({ onQuerySubmit, selectedLocation }) => {
+const WeatherQuery = ({ onQuerySubmit, selectedLocation, darkMode }) => {
   const [selectedConditions, setSelectedConditions] = useState([]);
   const [timeRange, setTimeRange] = useState({
     startDate: '',
@@ -91,61 +91,87 @@ const WeatherQuery = ({ onQuerySubmit, selectedLocation }) => {
       return;
     }
 
+    // Format the query to match the backend schema exactly
     const query = {
-      location: selectedLocation,
-      conditions: selectedConditions,
-      timeRange,
-      thresholds: selectedConditions.reduce((acc, conditionId) => {
-        const condition = weatherConditions.find(c => c.id === conditionId);
-        if (condition) {
-          acc[conditionId] = {
-            threshold: condition.threshold,
-            unit: condition.unit
-          };
-        }
-        return acc;
-      }, {}),
-      timestamp: new Date().toISOString()
+      location: {
+        name: selectedLocation.name,
+        lat: selectedLocation.lat,
+        lon: selectedLocation.lon,
+        method: selectedLocation.method || 'search'
+      },
+      conditions: selectedConditions, // These should match the enum values
+      time_range: {
+        start_date: timeRange.startDate || null,
+        end_date: timeRange.endDate || null,
+        day_of_year: timeRange.dayOfYear || null
+      },
+      thresholds: {
+        temperature_hot: weatherConditions.find(c => c.id === 'very-hot')?.threshold || 90,
+        temperature_cold: weatherConditions.find(c => c.id === 'very-cold')?.threshold || 32,
+        wind_speed: weatherConditions.find(c => c.id === 'very-windy')?.threshold || 25,
+        precipitation: weatherConditions.find(c => c.id === 'very-wet')?.threshold || 0.5,
+        air_quality: weatherConditions.find(c => c.id === 'poor-air-quality')?.threshold || 100
+      }
     };
 
     onQuerySubmit(query);
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+    <div className={`rounded-xl shadow-lg p-6 mb-6 transition-colors duration-300 ${
+      darkMode ? 'bg-gray-800' : 'bg-white'
+    }`}>
+      <h2 className={`text-xl font-semibold mb-4 flex items-center transition-colors duration-300 ${
+        darkMode ? 'text-white' : 'text-gray-800'
+      }`}>
         <Calendar className="mr-2 text-blue-600" />
         Weather Query Configuration
       </h2>
 
       {/* Time Range Selection */}
       <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-700 mb-3">Time Range</h3>
+        <h3 className={`text-lg font-medium mb-3 transition-colors duration-300 ${
+          darkMode ? 'text-gray-300' : 'text-gray-700'
+        }`}>Time Range</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Start Date
             </label>
             <input
               type="date"
               value={timeRange.startDate}
               onChange={(e) => setTimeRange({ ...timeRange, startDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                darkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               End Date
             </label>
             <input
               type="date"
               value={timeRange.endDate}
               onChange={(e) => setTimeRange({ ...timeRange, endDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                darkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Day of Year (1-365)
             </label>
             <input
@@ -155,7 +181,11 @@ const WeatherQuery = ({ onQuerySubmit, selectedLocation }) => {
               value={timeRange.dayOfYear}
               onChange={(e) => setTimeRange({ ...timeRange, dayOfYear: e.target.value })}
               placeholder="e.g., 150"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                darkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+              }`}
             />
           </div>
         </div>
@@ -163,14 +193,18 @@ const WeatherQuery = ({ onQuerySubmit, selectedLocation }) => {
 
       {/* Weather Conditions Selection */}
       <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-700 mb-3">Weather Conditions</h3>
+        <h3 className={`text-lg font-medium mb-3 transition-colors duration-300 ${
+          darkMode ? 'text-gray-300' : 'text-gray-700'
+        }`}>Weather Conditions</h3>
         <div className="space-y-4">
           {weatherConditions.map((condition) => {
             const IconComponent = condition.icon;
             const isSelected = selectedConditions.includes(condition.id);
             
             return (
-              <div key={condition.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={condition.id} className={`border rounded-lg p-4 transition-colors duration-300 ${
+                darkMode ? 'border-gray-600' : 'border-gray-200'
+              }`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
                     <input
@@ -181,24 +215,36 @@ const WeatherQuery = ({ onQuerySubmit, selectedLocation }) => {
                       className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <IconComponent className="mr-2 text-blue-600" size={20} />
-                    <label htmlFor={condition.id} className="text-sm font-medium text-gray-700">
+                    <label htmlFor={condition.id} className={`text-sm font-medium transition-colors duration-300 ${
+                      darkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
                       {condition.name}
                     </label>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">{condition.description}</p>
+                <p className={`text-sm mb-3 transition-colors duration-300 ${
+                  darkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>{condition.description}</p>
                 
                 {isSelected && (
                   <div className="flex items-center space-x-2">
-                    <label className="text-sm text-gray-700">Threshold:</label>
+                    <label className={`text-sm transition-colors duration-300 ${
+                      darkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>Threshold:</label>
                     <input
                       type="number"
                       step="any"
                       value={condition.threshold}
                       onChange={(e) => handleThresholdChange(condition.id, e.target.value)}
-                      className="px-2 py-1 border border-gray-300 rounded text-sm w-20"
+                      className={`px-2 py-1 border rounded text-sm w-20 transition-colors duration-300 ${
+                        darkMode 
+                          ? 'bg-gray-700 border-gray-600 text-white' 
+                          : 'bg-white border-gray-300 text-gray-900'
+                      }`}
                     />
-                    <span className="text-sm text-gray-500">{condition.unit}</span>
+                    <span className={`text-sm transition-colors duration-300 ${
+                      darkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}>{condition.unit}</span>
                   </div>
                 )}
               </div>
@@ -211,7 +257,7 @@ const WeatherQuery = ({ onQuerySubmit, selectedLocation }) => {
       <button
         onClick={handleSubmit}
         disabled={!selectedLocation || selectedConditions.length === 0}
-        className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+        className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-300 font-medium transform hover:scale-105 disabled:transform-none"
       >
         Analyze Weather Conditions
       </button>

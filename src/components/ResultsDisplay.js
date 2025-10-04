@@ -6,20 +6,64 @@ import { Download, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const ResultsDisplay = ({ queryResults, onDownload }) => {
+const ResultsDisplay = ({ queryResults, onDownload, darkMode }) => {
   if (!queryResults) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className={`rounded-xl shadow-lg p-6 transition-colors duration-300 ${
+        darkMode ? 'bg-gray-800' : 'bg-white'
+      }`}>
         <div className="text-center py-12">
-          <Info className="mx-auto text-gray-400 mb-4" size={48} />
-          <h3 className="text-lg font-medium text-gray-600 mb-2">No Results Yet</h3>
-          <p className="text-gray-500">Configure your location and weather conditions to see analysis results.</p>
+          <Info className={`mx-auto mb-4 transition-colors duration-300 ${
+            darkMode ? 'text-gray-500' : 'text-gray-400'
+          }`} size={48} />
+          <h3 className={`text-lg font-medium mb-2 transition-colors duration-300 ${
+            darkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>No Results Yet</h3>
+          <p className={`transition-colors duration-300 ${
+            darkMode ? 'text-gray-400' : 'text-gray-500'
+          }`}>Configure your location and weather conditions to see analysis results.</p>
         </div>
       </div>
     );
   }
 
-  const { location, conditions, probabilities, metadata } = queryResults;
+  // Safely extract data with fallbacks
+  const location = queryResults.location || {};
+  const conditions = queryResults.conditions || [];
+  const probabilities = queryResults.probabilities || [];
+  const metadata = queryResults.metadata || {};
+  const thresholds = queryResults.thresholds || {};
+  const timestamp = queryResults.timestamp || new Date().toISOString();
+
+  // Validate that we have the required data
+  if (!location || !conditions || !probabilities || conditions.length === 0 || probabilities.length === 0) {
+    return (
+      <div className={`rounded-xl shadow-lg p-6 transition-colors duration-300 ${
+        darkMode ? 'bg-gray-800' : 'bg-white'
+      }`}>
+        <div className="text-center py-12">
+          <AlertTriangle className={`mx-auto mb-4 text-red-500`} size={48} />
+          <h3 className={`text-lg font-medium mb-2 transition-colors duration-300 ${
+            darkMode ? 'text-red-300' : 'text-red-600'
+          }`}>Invalid Data Format</h3>
+          <p className={`transition-colors duration-300 ${
+            darkMode ? 'text-red-400' : 'text-red-500'
+          }`}>
+            The analysis results are not in the expected format. Please try running the analysis again.
+          </p>
+          <div className={`mt-4 p-3 rounded-lg transition-colors duration-300 ${
+            darkMode ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <p className={`text-xs transition-colors duration-300 ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Debug info: {JSON.stringify(queryResults, null, 2)}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Prepare chart data
   const chartData = {
@@ -57,17 +101,33 @@ const ResultsDisplay = ({ queryResults, onDownload }) => {
     plugins: {
       legend: {
         position: 'top',
+        labels: {
+          color: darkMode ? '#e5e7eb' : '#374151'
+        }
       },
       title: {
         display: true,
         text: 'Weather Condition Probabilities',
+        color: darkMode ? '#e5e7eb' : '#374151'
       },
     },
     scales: {
+      x: {
+        grid: {
+          color: darkMode ? '#374151' : '#e5e7eb'
+        },
+        ticks: {
+          color: darkMode ? '#9ca3af' : '#6b7280'
+        }
+      },
       y: {
         beginAtZero: true,
         max: 100,
+        grid: {
+          color: darkMode ? '#374151' : '#e5e7eb'
+        },
         ticks: {
+          color: darkMode ? '#9ca3af' : '#6b7280',
           callback: function(value) {
             return value + '%';
           }
@@ -83,12 +143,16 @@ const ResultsDisplay = ({ queryResults, onDownload }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div className={`rounded-xl shadow-lg p-6 mb-6 transition-colors duration-300 ${
+      darkMode ? 'bg-gray-800' : 'bg-white'
+    }`}>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-800">Analysis Results</h2>
+        <h2 className={`text-xl font-semibold transition-colors duration-300 ${
+          darkMode ? 'text-white' : 'text-gray-800'
+        }`}>Analysis Results</h2>
         <button
           onClick={() => onDownload(queryResults)}
-          className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+          className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-all duration-300 transform hover:scale-105"
         >
           <Download className="mr-2" size={16} />
           Download Data
@@ -96,16 +160,28 @@ const ResultsDisplay = ({ queryResults, onDownload }) => {
       </div>
 
       {/* Location Summary */}
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="text-lg font-medium text-blue-800 mb-2">Location Analysis</h3>
-        <p className="text-blue-700">
-          <strong>Location:</strong> {location.name}
+      <div className={`mb-6 p-4 rounded-lg border transition-colors duration-300 ${
+        darkMode 
+          ? 'bg-blue-900/20 border-blue-800' 
+          : 'bg-blue-50 border-blue-200'
+      }`}>
+        <h3 className={`text-lg font-medium mb-2 transition-colors duration-300 ${
+          darkMode ? 'text-blue-300' : 'text-blue-800'
+        }`}>Location Analysis</h3>
+        <p className={`transition-colors duration-300 ${
+          darkMode ? 'text-blue-200' : 'text-blue-700'
+        }`}>
+          <strong>Location:</strong> {location.name || 'Unknown Location'}
         </p>
-        <p className="text-blue-700">
-          <strong>Coordinates:</strong> {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
+        <p className={`transition-colors duration-300 ${
+          darkMode ? 'text-blue-200' : 'text-blue-700'
+        }`}>
+          <strong>Coordinates:</strong> {location.lat ? location.lat.toFixed(4) : 'N/A'}, {location.lon ? location.lon.toFixed(4) : 'N/A'}
         </p>
-        <p className="text-blue-700">
-          <strong>Analysis Date:</strong> {new Date(metadata.timestamp).toLocaleDateString()}
+        <p className={`transition-colors duration-300 ${
+          darkMode ? 'text-blue-200' : 'text-blue-700'
+        }`}>
+          <strong>Analysis Date:</strong> {new Date(timestamp).toLocaleDateString()}
         </p>
       </div>
 
@@ -118,16 +194,22 @@ const ResultsDisplay = ({ queryResults, onDownload }) => {
 
       {/* Detailed Results */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-700">Detailed Analysis</h3>
+        <h3 className={`text-lg font-medium transition-colors duration-300 ${
+          darkMode ? 'text-gray-300' : 'text-gray-700'
+        }`}>Detailed Analysis</h3>
         {conditions.map((condition, index) => {
           const probability = probabilities[index];
           const risk = getRiskLevel(probability);
           const RiskIcon = risk.icon;
           
           return (
-            <div key={condition} className="border border-gray-200 rounded-lg p-4">
+            <div key={condition} className={`border rounded-lg p-4 transition-colors duration-300 ${
+              darkMode ? 'border-gray-600' : 'border-gray-200'
+            }`}>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-800 capitalize">
+                <h4 className={`font-medium capitalize transition-colors duration-300 ${
+                  darkMode ? 'text-white' : 'text-gray-800'
+                }`}>
                   {condition.replace('-', ' ')}
                 </h4>
                 <div className={`flex items-center px-2 py-1 rounded-full text-sm font-medium bg-${risk.color}-100 text-${risk.color}-800`}>
@@ -137,11 +219,15 @@ const ResultsDisplay = ({ queryResults, onDownload }) => {
               </div>
               <div className="flex items-center space-x-4">
                 <div className="flex-1">
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
+                  <div className={`flex justify-between text-sm mb-1 transition-colors duration-300 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
                     <span>Probability</span>
                     <span>{probability}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className={`w-full rounded-full h-2 transition-colors duration-300 ${
+                    darkMode ? 'bg-gray-700' : 'bg-gray-200'
+                  }`}>
                     <div
                       className={`h-2 rounded-full bg-${risk.color}-500`}
                       style={{ width: `${probability}%` }}
@@ -149,7 +235,9 @@ const ResultsDisplay = ({ queryResults, onDownload }) => {
                   </div>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className={`text-sm mt-2 transition-colors duration-300 ${
+                darkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
                 {probability >= 70 
                   ? `High likelihood of ${condition.replace('-', ' ')} conditions. Consider alternative timing or locations.`
                   : probability >= 40 
@@ -163,9 +251,17 @@ const ResultsDisplay = ({ queryResults, onDownload }) => {
       </div>
 
       {/* Recommendations */}
-      <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-        <h3 className="text-lg font-medium text-gray-700 mb-3">Recommendations</h3>
-        <ul className="space-y-2 text-sm text-gray-600">
+      <div className={`mt-6 p-4 rounded-lg border transition-colors duration-300 ${
+        darkMode 
+          ? 'bg-gray-700 border-gray-600' 
+          : 'bg-gray-50 border-gray-200'
+      }`}>
+        <h3 className={`text-lg font-medium mb-3 transition-colors duration-300 ${
+          darkMode ? 'text-gray-300' : 'text-gray-700'
+        }`}>Recommendations</h3>
+        <ul className={`space-y-2 text-sm transition-colors duration-300 ${
+          darkMode ? 'text-gray-400' : 'text-gray-600'
+        }`}>
           {probabilities.some(p => p >= 70) && (
             <li className="flex items-start">
               <AlertTriangle className="mr-2 text-red-500 mt-0.5" size={16} />

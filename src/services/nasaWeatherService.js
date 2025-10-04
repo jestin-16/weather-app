@@ -29,7 +29,10 @@ class NASAWeatherService {
     } catch (error) {
       console.error('Error analyzing weather conditions:', error);
       if (error.response) {
-        throw new Error(error.response.data.detail || 'Failed to analyze weather conditions.');
+        const errorData = error.response.data;
+        const errorMessage = errorData.detail || errorData.message || 'Failed to analyze weather conditions.';
+        console.error('Backend error details:', errorData);
+        throw new Error(`Backend Error (${error.response.status}): ${errorMessage}`);
       } else if (error.request) {
         throw new Error('Unable to connect to weather service. Please check your connection.');
       } else {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, Search, Navigation } from 'lucide-react';
 
-const LocationSelector = ({ onLocationSelect, selectedLocation }) => {
+const LocationSelector = ({ onLocationSelect, selectedLocation, darkMode }) => {
   const [inputMethod, setInputMethod] = useState('search');
   const [searchQuery, setSearchQuery] = useState('');
   const [coordinates, setCoordinates] = useState({ lat: '', lon: '' });
@@ -42,8 +42,12 @@ const LocationSelector = ({ onLocationSelect, selectedLocation }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+    <div className={`rounded-xl shadow-lg p-6 mb-6 transition-colors duration-300 ${
+      darkMode ? 'bg-gray-800' : 'bg-white'
+    }`}>
+      <h2 className={`text-xl font-semibold mb-4 flex items-center transition-colors duration-300 ${
+        darkMode ? 'text-white' : 'text-gray-800'
+      }`}>
         <MapPin className="mr-2 text-blue-600" />
         Select Location
       </h2>
@@ -89,7 +93,9 @@ const LocationSelector = ({ onLocationSelect, selectedLocation }) => {
       {inputMethod === 'search' && (
         <form onSubmit={handleSearchSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Location Name
             </label>
             <input
@@ -97,7 +103,11 @@ const LocationSelector = ({ onLocationSelect, selectedLocation }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Enter city, state, or landmark..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                darkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+              }`}
             />
           </div>
           <button
@@ -114,7 +124,9 @@ const LocationSelector = ({ onLocationSelect, selectedLocation }) => {
         <form onSubmit={handleCoordinateSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+                darkMode ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Latitude
               </label>
               <input
@@ -123,11 +135,17 @@ const LocationSelector = ({ onLocationSelect, selectedLocation }) => {
                 value={coordinates.lat}
                 onChange={(e) => setCoordinates({ ...coordinates, lat: e.target.value })}
                 placeholder="e.g., 40.7128"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+                darkMode ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Longitude
               </label>
               <input
@@ -136,7 +154,11 @@ const LocationSelector = ({ onLocationSelect, selectedLocation }) => {
                 value={coordinates.lon}
                 onChange={(e) => setCoordinates({ ...coordinates, lon: e.target.value })}
                 placeholder="e.g., -74.0060"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                  darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
               />
             </div>
           </div>
@@ -152,11 +174,25 @@ const LocationSelector = ({ onLocationSelect, selectedLocation }) => {
       {/* Map Placeholder */}
       {inputMethod === 'map' && (
         <div className="space-y-4">
-          <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center border-2 border-dashed border-gray-300">
+          <div className={`rounded-lg h-64 flex items-center justify-center border-2 border-dashed transition-colors duration-300 ${
+            darkMode 
+              ? 'bg-gray-700 border-gray-600' 
+              : 'bg-gray-100 border-gray-300'
+          }`}>
             <div className="text-center">
-              <MapPin className="mx-auto text-gray-400 mb-2" size={48} />
-              <p className="text-gray-500">Interactive map will be implemented here</p>
-              <p className="text-sm text-gray-400 mt-1">Click to select location</p>
+              <MapPin className={`mx-auto mb-2 transition-colors duration-300 ${
+                darkMode ? 'text-gray-500' : 'text-gray-400'
+              }`} size={48} />
+              <p className={`transition-colors duration-300 ${
+                darkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}>
+                Interactive map will be implemented here
+              </p>
+              <p className={`text-sm mt-1 transition-colors duration-300 ${
+                darkMode ? 'text-gray-500' : 'text-gray-400'
+              }`}>
+                Click to select location
+              </p>
             </div>
           </div>
           <button
@@ -170,11 +206,19 @@ const LocationSelector = ({ onLocationSelect, selectedLocation }) => {
 
       {/* Selected Location Display */}
       {selectedLocation && (
-        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-sm text-green-800">
+        <div className={`mt-4 p-3 rounded-md border transition-colors duration-300 ${
+          darkMode 
+            ? 'bg-green-900/20 border-green-800' 
+            : 'bg-green-50 border-green-200'
+        }`}>
+          <p className={`text-sm transition-colors duration-300 ${
+            darkMode ? 'text-green-300' : 'text-green-800'
+          }`}>
             <strong>Selected:</strong> {selectedLocation.name}
           </p>
-          <p className="text-xs text-green-600">
+          <p className={`text-xs transition-colors duration-300 ${
+            darkMode ? 'text-green-400' : 'text-green-600'
+          }`}>
             Coordinates: {selectedLocation.lat.toFixed(4)}, {selectedLocation.lon.toFixed(4)}
           </p>
         </div>
