@@ -1,4 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { MapPin, Search, Navigation, Layers } from 'lucide-react';
 
 const InteractiveMap = ({ selectedLocation, onLocationSelect, darkMode }) => {
@@ -16,46 +19,96 @@ const InteractiveMap = ({ selectedLocation, onLocationSelect, darkMode }) => {
     }
   }, [selectedLocation]);
 
-  const handleMapClick = (event) => {
-    // Simulate map click coordinates
-    const lat = mapCenter[0] + (Math.random() - 0.5) * 0.1;
-    const lon = mapCenter[1] + (Math.random() - 0.5) * 0.1;
-    
-    onLocationSelect({
-      method: 'map',
-      lat,
-      lon,
-      name: `${lat.toFixed(4)}, ${lon.toFixed(4)}`
-    });
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Simulate geocoding
-      const mockCoordinates = {
-        'new york': [40.7128, -74.0060],
-        'london': [51.5074, -0.1278],
-        'tokyo': [35.6762, 139.6503],
-        'paris': [48.8566, 2.3522],
-        'sydney': [-33.8688, 151.2093],
-        'moscow': [55.7558, 37.6176],
-        'beijing': [39.9042, 116.4074],
-        'mumbai': [19.0760, 72.8777]
-      };
-
-      const coords = mockCoordinates[searchQuery.toLowerCase()];
-      if (coords) {
-        setMapCenter(coords);
-        setZoom(12);
+  // Custom map click handler using react-leaflet
+  function MapClickHandler() {
+    useMapEvents({
+      click(e) {
+        const { lat, lng } = e.latlng;
         onLocationSelect({
-          method: 'search',
-          lat: coords[0],
-          lon: coords[1],
-          name: searchQuery,
-          query: searchQuery
+          method: 'map',
+          lat,
+          lon: lng,
+          name: `${lat.toFixed(4)}, ${lng.toFixed(4)}`
         });
       }
+    });
+    return null;
+  }
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      try {
+        // Try real geocoding first
+        const coords = await geocodeLocation(searchQuery);
+        if (coords) {
+          setMapCenter(coords);
+          setZoom(12);
+          onLocationSelect({
+            method: 'search',
+            lat: coords[0],
+            lon: coords[1],
+            name: searchQuery,
+            query: searchQuery
+          });
+        } else {
+          // Fallback to mock data for demo purposes
+          const mockCoordinates = {
+            'new york': [40.7128, -74.0060],
+            'london': [51.5074, -0.1278],
+            'tokyo': [35.6762, 139.6503],
+            'paris': [48.8566, 2.3522],
+            'sydney': [-33.8688, 151.2093],
+            'moscow': [55.7558, 37.6176],
+            'beijing': [39.9042, 116.4074],
+            'mumbai': [19.0760, 72.8777]
+          };
+
+          const mockCoords = mockCoordinates[searchQuery.toLowerCase()];
+          if (mockCoords) {
+            setMapCenter(mockCoords);
+            setZoom(12);
+            onLocationSelect({
+              method: 'search',
+              lat: mockCoords[0],
+              lon: mockCoords[1],
+              name: searchQuery,
+              query: searchQuery
+            });
+          } else {
+            alert('Location not found. Try: New York, London, Tokyo, Paris, Sydney, Moscow, Beijing, or Mumbai.');
+          }
+        }
+      } catch (error) {
+        console.error('Geocoding error:', error);
+        alert('Error searching for location. Please try again.');
+      }
+      
+    }
+  };
+
+  // Real geocoding function using OpenStreetMap Nominatim API
+  const geocodeLocation = async (query) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Geocoding service unavailable');
+      }
+      
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const result = data[0];
+        return [parseFloat(result.lat), parseFloat(result.lon)];
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return null;
     }
   };
 
@@ -130,82 +183,50 @@ const InteractiveMap = ({ selectedLocation, onLocationSelect, darkMode }) => {
         darkMode ? 'bg-gray-800' : 'bg-white'
       }`}>
         <div className="relative h-96 lg:h-[500px]">
-          {/* Map Placeholder with Interactive Elements */}
-          <div 
-            className="w-full h-full bg-gradient-to-br from-blue-400 via-green-400 to-yellow-400 relative cursor-crosshair"
-            onClick={handleMapClick}
+          <MapContainer
+            center={mapCenter}
+            zoom={zoom}
+            style={{ height: '100%', width: '100%' }}
+            whenCreated={mapInstance => { mapRef.current = mapInstance; }}
           >
-            {/* Map Grid */}
-            <div className="absolute inset-0 opacity-20">
-              {Array.from({ length: 20 }, (_, i) => (
-                <div key={i} className="absolute w-full h-px bg-white" style={{ top: `${i * 5}%` }}></div>
-              ))}
-              {Array.from({ length: 20 }, (_, i) => (
-                <div key={i} className="absolute h-full w-px bg-white" style={{ left: `${i * 5}%` }}></div>
-              ))}
-            </div>
-
-            {/* Map Center Marker */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <div className="relative">
-                <div className="w-8 h-8 bg-red-500 rounded-full border-4 border-white shadow-lg animate-pulse"></div>
-                <div className="absolute -top-2 -left-2 w-12 h-12 bg-red-500 rounded-full opacity-20 animate-ping"></div>
-              </div>
-            </div>
-
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <MapClickHandler />
+            {/* Center Marker */}
+            <Marker position={mapCenter} icon={L.icon({ iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png', iconSize: [25, 41], iconAnchor: [12, 41] })}>
+              <Popup>Map Center<br/>Lat: {mapCenter[0].toFixed(4)}<br/>Lon: {mapCenter[1].toFixed(4)}</Popup>
+            </Marker>
             {/* Selected Location Marker */}
             {selectedLocation && (
-              <div 
-                className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: `${50 + (selectedLocation.lat - mapCenter[0]) * 1000}%`,
-                  top: `${50 + (selectedLocation.lon - mapCenter[1]) * 1000}%`
-                }}
-              >
-                <div className="relative">
-                  <MapPin className="w-8 h-8 text-blue-600 drop-shadow-lg" />
-                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white text-black text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                    {selectedLocation.name}
-                  </div>
-                </div>
-              </div>
+              <Marker position={[selectedLocation.lat, selectedLocation.lon]} icon={L.icon({ iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon-2x.png', iconSize: [25, 41], iconAnchor: [12, 41], className: 'text-blue-600' })}>
+                <Popup>{selectedLocation.name}</Popup>
+              </Marker>
             )}
-
-            {/* Map Overlay Info */}
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-              <div className="flex items-center space-x-2 text-sm">
-                <Layers className="text-gray-600" size={16} />
-                <span className="font-medium">{layerOptions.find(l => l.id === mapLayers)?.name} View</span>
-              </div>
-              <div className="text-xs text-gray-600 mt-1">
-                Zoom: {zoom}x • Click to select location
-              </div>
+          </MapContainer>
+          {/* Zoom Controls */}
+          <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg z-[1000]">
+            <div className="flex flex-col space-y-1">
+              <button
+                onClick={() => setZoom(Math.min(zoom + 1, 20))}
+                className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded text-gray-700"
+              >
+                +
+              </button>
+              <button
+                onClick={() => setZoom(Math.max(zoom - 1, 1))}
+                className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded text-gray-700"
+              >
+                −
+              </button>
             </div>
-
-            {/* Coordinates Display */}
-            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-              <div className="text-sm font-mono">
-                <div>Lat: {mapCenter[0].toFixed(4)}</div>
-                <div>Lon: {mapCenter[1].toFixed(4)}</div>
-              </div>
-            </div>
-
-            {/* Zoom Controls */}
-            <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-              <div className="flex flex-col space-y-1">
-                <button
-                  onClick={() => setZoom(Math.min(zoom + 1, 20))}
-                  className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded text-gray-700"
-                >
-                  +
-                </button>
-                <button
-                  onClick={() => setZoom(Math.max(zoom - 1, 1))}
-                  className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded text-gray-700"
-                >
-                  −
-                </button>
-              </div>
+          </div>
+          {/* Coordinates Display */}
+          <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg z-[1000]">
+            <div className="text-sm font-mono">
+              <div>Lat: {mapCenter[0].toFixed(4)}</div>
+              <div>Lon: {mapCenter[1].toFixed(4)}</div>
             </div>
           </div>
         </div>
