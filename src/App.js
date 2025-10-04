@@ -32,11 +32,39 @@ function App() {
     document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
 
-  const handleLocationSelect = (location) => {
+  const handleLocationSelect = async (location) => {
     setSelectedLocation(location);
     setQueryResults(null);
     setWeatherTrends(null);
     setError(null);
+    
+    // Automatically trigger weather analysis with default conditions
+    if (location) {
+      const defaultQuery = {
+        location: {
+          name: location.name,
+          lat: location.lat,
+          lon: location.lon,
+          method: location.method || 'search'
+        },
+        conditions: ['very-hot', 'very-cold', 'very-windy', 'very-wet', 'poor-air-quality'], // Default conditions
+        time_range: {
+          start_date: null,
+          end_date: null,
+          day_of_year: new Date().getDay() + 1 // Current day of year
+        },
+        thresholds: {
+          temperature_hot: 90,
+          temperature_cold: 32,
+          wind_speed: 25,
+          precipitation: 0.5,
+          air_quality: 100
+        }
+      };
+      
+      // Trigger automatic analysis
+      await handleQuerySubmit(defaultQuery);
+    }
   };
 
   const handleQuerySubmit = async (query) => {
@@ -231,6 +259,7 @@ function App() {
                 onLocationSelect={handleLocationSelect}
                 selectedLocation={selectedLocation}
                 darkMode={darkMode}
+                isLoading={isLoading}
               />
               
               {selectedLocation && (
@@ -295,6 +324,27 @@ function App() {
 
               {!isLoading && !error && (
                 <>
+                  {/* Quick Weather Summary */}
+                  {selectedLocation && !queryResults && (
+                    <div className={`rounded-xl shadow-lg p-6 mb-6 transition-colors duration-300 ${
+                      darkMode ? 'bg-gray-800' : 'bg-white'
+                    }`}>
+                      <div className="text-center py-8">
+                        <div className="text-6xl mb-4">🌦️</div>
+                        <h3 className={`text-xl font-semibold mb-2 transition-colors duration-300 ${
+                          darkMode ? 'text-white' : 'text-gray-900'
+                        }`}>
+                          Weather Analysis for {selectedLocation.name}
+                        </h3>
+                        <p className={`transition-colors duration-300 ${
+                          darkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
+                          Analyzing weather conditions and generating detailed report...
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <ResultsDisplay 
                     queryResults={queryResults}
                     onDownload={handleDownload}

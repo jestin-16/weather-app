@@ -121,12 +121,19 @@ const WeatherQuery = ({ onQuerySubmit, selectedLocation, darkMode }) => {
     <div className={`rounded-xl shadow-lg p-6 mb-6 transition-colors duration-300 ${
       darkMode ? 'bg-gray-800' : 'bg-white'
     }`}>
-      <h2 className={`text-xl font-semibold mb-4 flex items-center transition-colors duration-300 ${
-        darkMode ? 'text-white' : 'text-gray-800'
-      }`}>
-        <Calendar className="mr-2 text-blue-600" />
-        Weather Query Configuration
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className={`text-xl font-semibold flex items-center transition-colors duration-300 ${
+          darkMode ? 'text-white' : 'text-gray-800'
+        }`}>
+          <Calendar className="mr-2 text-blue-600" />
+          Weather Query Configuration
+        </h2>
+        <div className={`text-sm px-3 py-1 rounded-full transition-colors duration-300 ${
+          darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-700'
+        }`}>
+          💡 Quick analysis running
+        </div>
+      </div>
 
       {/* Time Range Selection */}
       <div className="mb-6">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, Search, Navigation } from 'lucide-react';
 
-const LocationSelector = ({ onLocationSelect, selectedLocation, darkMode }) => {
+const LocationSelector = ({ onLocationSelect, selectedLocation, darkMode, isLoading }) => {
   const [inputMethod, setInputMethod] = useState('search');
   const [searchQuery, setSearchQuery] = useState('');
   const [coordinates, setCoordinates] = useState({ lat: '', lon: '' });
@@ -50,6 +50,16 @@ const LocationSelector = ({ onLocationSelect, selectedLocation, darkMode }) => {
       }`}>
         <MapPin className="mr-2 text-blue-600" />
         Select Location
+        {isLoading && (
+          <div className="ml-3 flex items-center">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-200 border-t-blue-600"></div>
+            <span className={`ml-2 text-sm transition-colors duration-300 ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Analyzing...
+            </span>
+          </div>
+        )}
       </h2>
       
       {/* Input Method Selection */}
@@ -211,16 +221,30 @@ const LocationSelector = ({ onLocationSelect, selectedLocation, darkMode }) => {
             ? 'bg-green-900/20 border-green-800' 
             : 'bg-green-50 border-green-200'
         }`}>
-          <p className={`text-sm transition-colors duration-300 ${
-            darkMode ? 'text-green-300' : 'text-green-800'
-          }`}>
-            <strong>Selected:</strong> {selectedLocation.name}
-          </p>
-          <p className={`text-xs transition-colors duration-300 ${
-            darkMode ? 'text-green-400' : 'text-green-600'
-          }`}>
-            Coordinates: {selectedLocation.lat.toFixed(4)}, {selectedLocation.lon.toFixed(4)}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className={`text-sm transition-colors duration-300 ${
+                darkMode ? 'text-green-300' : 'text-green-800'
+              }`}>
+                <strong>Selected:</strong> {selectedLocation.name}
+              </p>
+              <p className={`text-xs transition-colors duration-300 ${
+                darkMode ? 'text-green-400' : 'text-green-600'
+              }`}>
+                Coordinates: {selectedLocation.lat.toFixed(4)}, {selectedLocation.lon.toFixed(4)}
+              </p>
+            </div>
+            {isLoading && (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-200 border-t-green-600"></div>
+                <span className={`ml-2 text-xs transition-colors duration-300 ${
+                  darkMode ? 'text-green-400' : 'text-green-600'
+                }`}>
+                  Analyzing...
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
